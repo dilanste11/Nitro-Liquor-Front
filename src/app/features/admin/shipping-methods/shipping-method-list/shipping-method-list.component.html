@@ -1,0 +1,56 @@
+<div class="p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Métodos de Envío</h1>
+    <a routerLink="/admin/shipping-methods/new" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition-colors font-medium">
+      + Nuevo Método
+    </a>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-gray-50 border-b border-gray-100 text-gray-600 text-sm">
+          <th class="p-4 font-semibold">ID</th>
+          <th class="p-4 font-semibold">Nombre</th>
+          <th class="p-4 font-semibold">Costo</th>
+          <th class="p-4 font-semibold text-center">Estado</th>
+          <th class="p-4 font-semibold text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (isLoading) {
+          <tr>
+            <td colspan="5" class="p-8 text-center text-gray-500">Cargando métodos de envío...</td>
+          </tr>
+        } @else if (shippingMethods.length === 0) {
+          <tr>
+            <td colspan="5" class="p-8 text-center text-gray-500">No hay métodos de envío registrados.</td>
+          </tr>
+        } @else {
+          @for (method of shippingMethods; track method.id) {
+            <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+              <td class="p-4 text-gray-500">#{{ method.id }}</td>
+              <td class="p-4 font-medium text-gray-800">{{ method.name }}</td>
+              <td class="p-4 text-blue-600 font-medium">{{ method.price | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+              <td class="p-4 text-center">
+                <span class="px-2 py-1 rounded-full text-xs font-bold"
+                      [class.bg-green-100]="method.isActive" [class.text-green-800]="method.isActive"
+                      [class.bg-red-100]="!method.isActive" [class.text-red-800]="!method.isActive">
+                  {{ method.isActive ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="p-4 flex justify-end gap-2">
+                <a [routerLink]="['/admin/shipping-methods/edit', method.id]" class="text-blue-600 hover:text-blue-800 p-2 bg-blue-50 rounded-md">
+                  Editar
+                </a>
+                <button (click)="deleteMethod(method.id)" class="text-red-600 hover:text-red-800 p-2 bg-red-50 rounded-md">
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,98 @@
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-800">Detalle del Movimiento</h1>
+    <p class="text-slate-500">Consulta de registro histórico.</p>
+  </div>
+  <a routerLink="/admin/movements" class="text-gray-500 hover:text-gray-700 font-medium text-sm flex items-center">
+    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+    Volver al historial
+  </a>
+</div>
+
+@if (isLoading) {
+  <div class="text-center py-12 text-gray-500">Cargando detalles...</div>
+} @else if (movement) {
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Resumen de la Cabecera -->
+    <div class="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-fit space-y-4">
+      <div>
+        <p class="text-xs text-gray-500 font-semibold uppercase">Número de Orden</p>
+        <p class="text-lg font-bold text-slate-800">{{ movement.orderNumber }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500 font-semibold uppercase">Fecha de Registro</p>
+        <p class="text-gray-800 font-medium">{{ movement.orderDate | date:'medium' }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500 font-semibold uppercase">Tipo de Movimiento</p>
+        <span class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{{ movement.type }}</span>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500 font-semibold uppercase">Observaciones</p>
+        <p class="text-gray-700 mt-1 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">{{ movement.note || 'Sin notas adicionales.' }}</p>
+      </div>
+    </div>
+
+    <!-- Lista de Botellas Ajustadas -->
+    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+        <h2 class="text-lg font-semibold text-gray-800">Productos Afectados</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-white text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+              <th class="px-6 py-4 font-medium">Producto</th>
+              <th class="px-6 py-4 font-medium text-center">Variación (Ajuste)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (item of movement.details; track item.id) {
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 text-sm font-medium text-slate-800">{{ item.productName }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <!-- Evaluamos el tipo de movimiento -->
+                  @if (movement?.type === 'VENTA') {
+                    <!-- Si es Venta, sale en Rojo y con signo Negativo -->
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                      -{{ item.quantity }}
+                    </span>
+                  } @else {
+                    <!-- Si es Compra o Auditoría, sale en Verde y con signo Positivo -->
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                      +{{ item.quantity }}
+                    </span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    <!-- NUEVO BLOQUE FINANCIERO (Resumen de Totales) -->
+    @if (movement?.type === 'VENTA' || movement?.type === 'COMPRA') {
+      <div class="bg-slate-50 border-t border-gray-200 p-6 flex justify-between items-center">
+        
+        <!-- Etiqueta dinámica (Total de la venta o Total de la compra) -->
+        <span class="text-sm font-semibold text-slate-500 uppercase tracking-wider">
+          Total de la {{ movement?.type | lowercase }}
+        </span>
+        
+        <!-- Valor formateado en pesos COP -->
+        <div class="flex items-baseline gap-2">
+          <span class="text-sm font-medium text-slate-400">COP</span>
+          <span class="text-3xl font-bold" 
+                [class.text-blue-600]="movement?.type === 'VENTA'"
+                [class.text-slate-800]="movement?.type === 'COMPRA'">
+            {{ movement?.total | currency:'COP':'symbol-narrow':'1.0-0' }}
+          </span>
+        </div>
+
+      </div>
+    }
+
+  </div>
+    
+  </div>
+}

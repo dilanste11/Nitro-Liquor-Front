@@ -1,0 +1,122 @@
+<div class="h-[calc(100vh-6rem)] flex flex-col gap-6">
+
+  <!-- CABECERA DE LA ORDEN DE COMPRA -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex gap-6 shrink-0">
+    <div class="flex-1">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Proveedor *</label>
+      <select [(ngModel)]="selectedSupplierId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
+        <option [ngValue]="null" disabled>Seleccione un proveedor...</option>
+        @for (supplier of suppliers; track supplier.id) {
+          <option [value]="supplier.id">{{ supplier.name }}</option>
+        }
+      </select>
+    </div>
+    
+    <div class="flex-1">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Ingreso</label>
+      <select [(ngModel)]="orderType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
+        <option value="COMPRA DIRECTA">Compra Directa</option>
+        <option value="REPOSICIÓN">Reposición</option>
+      </select>
+    </div>
+
+    <div class="flex-[2]">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Observaciones / Ref. Factura</label>
+      <input type="text" [(ngModel)]="observation" placeholder="Ej: Factura #12345 entregada por el conductor..." 
+             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+    </div>
+  </div>
+
+  <!-- ZONA INFERIOR: Catálogo y Recepción -->
+  <div class="flex-1 flex gap-6 min-h-0">
+    
+    <!-- PANEL IZQUIERDO: Catálogo de Productos -->
+    <div class="w-1/2 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col">
+      <div class="p-4 border-b border-gray-100 bg-gray-50">
+         <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar producto para ingresar al inventario..." 
+             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+      
+      <div class="flex-1 overflow-y-auto p-4">
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          @for (product of products; track product.id) {
+            <div (click)="addProductToOrder(product)" 
+                 class="border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-slate-800 hover:shadow-md transition-all flex flex-col items-center text-center">
+              
+              <!-- Imagen del producto -->
+              @if (product.imageUrl) {
+                <div class="w-12 h-12 mb-2 rounded bg-white flex items-center justify-center overflow-hidden shrink-0">
+                  <img [src]="product.imageUrl" class="w-full h-full object-contain">
+                </div>
+              } @else {
+                <div class="w-12 h-12 mb-2 rounded bg-gray-100 flex items-center justify-center shrink-0">
+                  <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                </div>
+              }
+              
+              <h3 class="text-xs font-semibold text-gray-800 line-clamp-2 min-h-[2rem]">{{ product.name }}</h3>
+              <!-- Mostramos el precio de compra que viene de BD -->
+              <p class="text-xs text-slate-500 mt-1">Costo: <span class="font-bold">{{ product.pricePurchase | currency:'COP':'symbol-narrow':'1.0-0' }}</span></p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL DERECHO: Detalle de Mercancía a Ingresar -->
+    <div class="w-1/2 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col">
+      <div class="p-4 border-b border-gray-100 bg-gray-50 flex items-center">
+        <svg class="w-5 h-5 mr-2 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+        <h2 class="text-lg font-bold text-gray-800">Mercancía Recibida</h2>
+      </div>
+      
+      <div class="flex-1 overflow-y-auto p-4 space-y-3">
+        @if (orderItems.length === 0) {
+          <div class="h-full flex flex-col items-center justify-center text-gray-400">
+            <p>Seleccione los productos que llegaron del proveedor</p>
+          </div>
+        }
+        
+        @for (item of orderItems; track item.productId; let i = $index) {
+          <div class="flex items-center justify-between border border-gray-100 p-3 rounded-lg bg-white">
+            <div class="flex-1">
+              <p class="text-sm font-bold text-gray-800">{{ item.name }}</p>
+              <!-- El precio de compra es fijo y de solo lectura -->
+              <p class="text-xs text-gray-500">Costo Unit: {{ item.unitCost | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+              <!-- ÚNICO CAMPO EDITABLE: LA CANTIDAD -->
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-semibold text-gray-500 uppercase">Cant:</label>
+                <input type="number" [(ngModel)]="item.quantity" (ngModelChange)="updateItem(i)" min="1" 
+                       class="w-20 px-2 py-1 border border-gray-300 rounded text-center focus:ring-blue-500 outline-none font-bold">
+              </div>
+              
+              <div class="w-24 text-right">
+                <p class="text-sm font-bold text-slate-700">{{ item.subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+              </div>
+              
+              <button (click)="removeProduct(i)" class="text-red-500 hover:text-red-700 p-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+      
+      <!-- Pie de Totales -->
+      <div class="p-6 bg-slate-50 border-t border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+          <span class="text-gray-600 font-medium">Total a Pagar al Proveedor</span>
+          <span class="text-2xl font-bold text-slate-800">{{ orderTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+        <button (click)="processOrder()" [disabled]="orderItems.length === 0 || !selectedSupplierId || isProcessing" 
+                class="w-full bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 text-white font-bold py-4 rounded-xl shadow-md transition-colors text-lg">
+          {{ isProcessing ? 'Procesando Ingreso...' : 'Confirmar Ingreso de Mercancía' }}
+        </button>
+      </div>
+    </div>
+    
+  </div>
+</div>

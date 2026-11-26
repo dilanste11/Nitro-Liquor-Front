@@ -1,0 +1,75 @@
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-800">Gestión de Productos</h1>
+    <p class="text-slate-500">Administra el catálogo de licores.</p>
+  </div>
+  <a routerLink="/admin/products/new" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center">
+    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+    Nuevo Producto
+  </a>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
+          <th class="px-6 py-4 font-medium">ID</th>
+          <th class="px-6 py-4 font-medium">Nombre</th>
+          <th class="px-6 py-4 font-medium">Precio</th>
+          <th class="px-6 py-4 font-medium">Stock</th>
+          <th class="px-6 py-4 font-medium text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        
+        @if (isLoading) {
+          <tr>
+            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+              Cargando productos...
+            </td>
+          </tr>
+        } @else if (products.length === 0) {
+          <tr>
+            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+              No hay productos registrados en el sistema.
+            </td>
+          </tr>
+        } @else {
+          @for (product of products; track product.id) {
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4 text-sm text-gray-500">#{{ product.id }}</td>
+              <td class="px-6 py-4 text-sm font-medium text-slate-800">{{ product.name }}</td>
+              <td class="px-6 py-4 text-sm text-slate-600">${{ product.priceSale }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <!-- 1. Sin Stock (Rojo) -->
+                @if (product.quantity === 0) {
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                    {{ product.quantity }} unds
+                  </span>
+                } 
+                <!-- 2. Stock Crítico / Pedido Sugerido (Amarillo) -->                
+                @else if ((product.quantity || 0) <= (product.stockMinimum || 0)) {
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800">
+                    {{ product.quantity }} unds
+                  </span>
+                }
+                <!-- 3. Stock Saludable (Verde) -->
+                @else {
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                    {{ product.quantity }} unds
+                  </span>
+                }
+              </td>
+              <td class="px-6 py-4 text-right space-x-2">
+                <a [routerLink]="['/admin/products/edit', product.id]" class="text-blue-500 hover:text-blue-700 font-medium text-sm">Editar</a>
+                <button class="text-red-500 hover:text-red-700 font-medium text-sm">Eliminar</button>
+              </td>
+            </tr>
+          }
+        }
+        
+      </tbody>
+    </table>
+  </div>
+</div>

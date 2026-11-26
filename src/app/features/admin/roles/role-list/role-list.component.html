@@ -1,0 +1,44 @@
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-800">Gestión de Roles</h1>
+    <p class="text-slate-500">Administra los permisos de los trabajadores.</p>
+  </div>
+  <a routerLink="/admin/roles/new" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center">
+    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+    Nuevo Rol
+  </a>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
+          <th class="px-6 py-4 font-medium w-24">ID</th>
+          <th class="px-6 py-4 font-medium">Código</th>
+          <th class="px-6 py-4 font-medium">Descripción</th>
+          <th class="px-6 py-4 font-medium text-right w-48">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        @if (isLoading) {
+          <tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">Cargando roles...</td></tr>
+        } @else if (roles.length === 0) {
+          <tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">No hay roles registrados.</td></tr>
+        } @else {
+          @for (role of roles; track role.id) {
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4 text-sm text-gray-500">#{{ role.id }}</td>
+              <td class="px-6 py-4 text-sm font-medium text-slate-800">{{ role.code }}</td>
+              <td class="px-6 py-4 text-sm text-slate-500">{{ role.description }}</td>
+              <td class="px-6 py-4 text-right space-x-3">
+                <a [routerLink]="['/admin/roles/edit', role.id]" class="text-blue-500 hover:text-blue-700 font-medium text-sm">Editar</a>
+                <button (click)="deleteRole(role.id)" class="text-red-500 hover:text-red-700 font-medium text-sm">Eliminar</button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,151 @@
+<div class="max-w-7xl mx-auto p-6 min-h-[70vh]">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-black text-white">Gestión de Pedidos</h1>
+    <button (click)="loadAllOrders()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-gray-300 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+      </svg>
+    </button>
+  </div>
+
+  @if (isLoading) {
+    <div class="text-center py-12 text-gray-400">Cargando órdenes...</div>
+  } @else {
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-gray-400">
+          <thead class="bg-slate-800/50 text-xs uppercase text-gray-300">
+            <tr>
+              <th scope="col" class="px-6 py-4 font-semibold">Orden</th>
+              <th scope="col" class="px-6 py-4 font-semibold">Fecha</th>
+              <th scope="col" class="px-6 py-4 font-semibold">Total</th>
+              <th scope="col" class="px-6 py-4 font-semibold">Estado Actual</th>
+              <th scope="col" class="px-6 py-4 font-semibold text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800">
+            @for (order of orders; track order.id) {
+              <tr class="hover:bg-slate-800/20 transition-colors">
+                
+                <td class="px-6 py-4">
+                  <span class="font-bold text-blue-400">#{{ order.orderNumber }}</span>
+                </td>
+                
+                <td class="px-6 py-4">
+                  {{ order.orderDate | date:'dd/MM/yyyy HH:mm' }}
+                </td>
+                
+                <td class="px-6 py-4 text-white font-medium">
+                  {{ order.total | currency:'COP':'symbol-narrow':'1.0-0' }}
+                </td>
+                
+                <td class="px-6 py-4">
+                  <span class="px-3 py-1 rounded-full text-xs font-bold border border-transparent" 
+                        [ngClass]="getStatusColor(order.status)">
+                    <!-- Mostramos el nombre del estado actual estáticamente si lo necesitas, o dejamos que el select hable por sí solo -->
+                    <select [(ngModel)]="order.status" 
+                            (ngModelChange)="onStatusChange(order.id, $event)"
+                            class="bg-transparent text-inherit font-bold outline-none cursor-pointer appearance-none">
+                      @for (opt of statusOptions; track opt.value) {
+                        <option [value]="opt.value" class="bg-slate-800 text-white">{{ opt.label }}</option>
+                      }
+                    </select>
+                  </span>
+                </td>
+
+                <td class="px-6 py-4 text-center">
+                  <button (click)="openOrderDetails(order.id)" class="text-gray-400 hover:text-white transition-colors p-2" title="Ver Detalles">
+                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                  </button>
+                </td>
+                
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
+
+@if (isModalOpen && selectedOrder) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      
+      <!-- Cabecera del Modal -->
+      <div class="flex justify-between items-center p-6 border-b border-slate-800">
+        <div>
+          <span class="text-xs text-gray-500 uppercase font-semibold">Detalles de la Orden</span>
+          <h2 class="text-xl font-black text-white">#{{ selectedOrder.orderNumber }}</h2>
+        </div>
+        <button (click)="closeModal()" class="text-gray-400 hover:text-white p-2 rounded-lg bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Contenido scrolleable -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-grow">
+        
+        <!-- Info general -->
+        <div class="grid grid-cols-2 gap-4 text-sm bg-slate-800/40 p-4 rounded-2xl border border-slate-800">
+          <div>
+            <p class="text-gray-500">Fecha del pedido</p>
+            <p class="text-gray-200 font-medium">{{ selectedOrder.orderDate | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500">Estado actual</p>
+            <p class="text-blue-400 font-bold">
+              @switch (selectedOrder.status) {
+                @case (1) { Pendiente }
+                @case (2) { Empacando }
+                @case (3) { Enviado }
+                @case (4) { Entregado }
+                @case (5) { Cancelado }
+              }
+            </p>
+          </div>
+        </div>
+
+        <!-- Lista de Productos Comprados -->
+        <div>
+          <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-3">Productos en el pedido</h3>
+          <div class="space-y-3">
+            @for (detail of selectedOrder.movementDetails; track detail.id) {
+              <div class="flex justify-between items-center bg-slate-800/30 p-3 rounded-xl border border-slate-800/80">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center text-blue-400 font-bold text-sm">
+                    {{ detail.quantity }}x
+                  </div>
+                  <div>
+                    <p class="text-white font-medium text-sm">{{ detail.product?.name || 'Producto ID: ' + detail.productId }}</p>
+                    <p class="text-xs text-gray-500">Subtotal: {{ detail.subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Total -->
+        <div class="flex justify-between items-center pt-4 border-t border-slate-800">
+          <span class="text-gray-400 font-medium">Total de la Compra</span>
+          <span class="text-2xl font-black text-white">{{ selectedOrder.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+
+      </div>
+
+      <!-- Pie del Modal -->
+      <div class="p-6 border-t border-slate-800 bg-slate-900/50 flex justify-end">
+        <button (click)="closeModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-xl transition-colors text-sm">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

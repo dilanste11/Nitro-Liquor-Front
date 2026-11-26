@@ -1,0 +1,101 @@
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-800">
+      {{ isEditMode ? 'Editar Producto' : 'Nuevo Producto' }}
+    </h1>
+    <p class="text-slate-500">Completa la información del licor.</p>
+  </div>
+  <a routerLink="/admin/products" class="text-gray-500 hover:text-gray-700 font-medium text-sm flex items-center">
+    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+    Volver a la lista
+  </a>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 max-w-3xl">
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="md:col-span-1">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Referencia / SKU</label>
+        <input type="text" formControlName="reference" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+
+      <div class="md:col-span-1">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto</label>
+        <input type="text" formControlName="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+        <textarea formControlName="description" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Precio Compra ($)</label>
+        <input type="number" formControlName="pricePurchase" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Precio Venta ($)</label>
+        <input type="number" formControlName="priceSale" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad Inicial (Stock)</label>
+        <input type="number" formControlName="quantity" [readonly]="isEditMode" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Impuesto</label>
+        <select formControlName="productTaxId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+          <option [ngValue]="null" disabled>Selecciona un impuesto...</option>
+          @for (tax of taxes; track tax.id) {
+            <option [value]="tax.id">{{ tax.name }} ({{ tax.percentage }}%)</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Stock Mínimo</label>
+        <input type="number" formControlName="stockMinimum" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Stock Máximo</label>
+        <input type="number" formControlName="stockMaximum" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+        <select formControlName="productCategoryId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+          <option [ngValue]="null" disabled>Selecciona una categoría...</option>
+          @for (category of categories; track category.id) {
+            <option [value]="category.id">{{ category.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Proveedor</label>
+        <select formControlName="supplierId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+          <option [ngValue]="null" disabled>Selecciona un proveedor...</option>
+          @for (provider of providers; track provider.id) {
+            <option [value]="provider.id">{{ provider.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Imagen del Producto</label>
+        <input type="file" accept="image/*" (change)="onFileSelected($event)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+      </div>
+    </div>
+
+    <div class="pt-4 flex justify-end">
+      <button type="submit" [disabled]="productForm.invalid || isLoading" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors disabled:bg-blue-300">
+        {{ isLoading ? 'Guardando...' : (isEditMode ? 'Guardar Cambios' : 'Crear Producto') }}
+      </button>
+    </div>
+
+  </form>
+</div>

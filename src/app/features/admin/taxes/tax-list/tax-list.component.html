@@ -1,0 +1,50 @@
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-800">Gestión de Impuestos</h1>
+    <p class="text-slate-500">Administra los impuestos para el catálogo.</p>
+  </div>
+  <a routerLink="/admin/taxes/new" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center">
+    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+    Nuevo Impuesto
+  </a>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
+          <th class="px-6 py-4 font-medium w-24">ID</th>
+          <th class="px-6 py-4 font-medium">Nombre</th>
+          <th class="px-6 py-4 font-medium">Porcentaje</th>
+          <th class="px-6 py-4 font-medium text-right w-48">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        
+        @if (isLoading) {
+          <tr>
+            <td colspan="4" class="px-6 py-8 text-center text-gray-500">Cargando impuestos...</td>
+          </tr>
+        } @else if (taxes.length === 0) {
+          <tr>
+            <td colspan="4" class="px-6 py-8 text-center text-gray-500">No hay impuestos registrados.</td>
+          </tr>
+        } @else {
+          @for (tax of taxes; track tax.id) {
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4 text-sm text-gray-500">#{{ tax.id }}</td>
+              <td class="px-6 py-4 text-sm font-medium text-slate-800">{{ tax.name }}</td>
+              <td class="px-6 py-4 text-sm text-slate-600">{{ tax.percentage }}%</td>
+              <td class="px-6 py-4 text-right space-x-3">
+                <a [routerLink]="['/admin/taxes/edit', tax.id]" class="text-blue-500 hover:text-blue-700 font-medium text-sm">Editar</a>
+                <button (click)="deleteTax(tax.id)" class="text-red-500 hover:text-red-700 font-medium text-sm">Eliminar</button>
+              </td>
+            </tr>
+          }
+        }
+        
+      </tbody>
+    </table>
+  </div>
+</div>

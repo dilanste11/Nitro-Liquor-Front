@@ -1,0 +1,112 @@
+<div class="h-[calc(100vh-6rem)] flex gap-6">
+  
+  <!-- PANEL IZQUIERDO: Catálogo de Productos (Ocupa 2/3 de la pantalla) -->
+  <div class="w-2/3 flex flex-col bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <!-- Buscador -->
+    <div class="p-4 border-b border-gray-100 bg-gray-50 flex gap-4">
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar producto por nombre o referencia..." 
+             class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+    </div>
+
+    <!-- Grilla de Licores -->
+    <<!-- Grilla de Licores -->
+    <div class="flex-1 overflow-y-auto p-4">
+      <div class="grid grid-cols-3 gap-4">
+        @for (product of products; track product.id) {
+          <div (click)="addToCart(product)" 
+               class="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all flex flex-col items-center text-center"
+               [class.opacity-50]="product.quantity <= 0">
+            
+            <!-- NUEVA LÓGICA DE IMAGEN -->
+            @if (product.imageUrl) {
+              <!-- Mostramos la imagen de Cloudinary -->
+              <div class="w-16 h-16 mb-3 rounded-lg overflow-hidden flex items-center justify-center bg-white">
+                <img [src]="product.imageUrl" [alt]="product.name" class="w-full h-full object-contain">
+              </div>
+            } @else {
+              <!-- Ícono de respaldo si no hay imagen -->
+              <div class="w-16 h-16 bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              </div>
+            }
+            <!-- FIN NUEVA LÓGICA -->
+
+            <h3 class="text-sm font-semibold text-gray-800 line-clamp-2 min-h-[2.5rem]">{{ product.name }}</h3>
+            <p class="text-blue-600 font-bold mt-1">{{ product.priceSale | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+            <p class="text-xs text-gray-500 mt-1">Stock: {{ product.quantity }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL DERECHO: Carrito y Cobro (Ocupa 1/3 de la pantalla) -->
+  <div class="w-1/3 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col">
+    <div class="p-4 border-b border-gray-100 bg-gray-50">
+      <h2 class="text-lg font-bold text-gray-800 flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        Orden Actual
+      </h2>
+    </div>
+
+    <!-- Lista de items en el carrito -->
+    <div class="flex-1 overflow-y-auto p-4 space-y-3">
+      @if (cart.length === 0) {
+        <div class="h-full flex flex-col items-center justify-center text-gray-400">
+          <p>El carrito está vacío</p>
+        </div>
+      }
+      @for (item of cart; track item.productId; let i = $index) {
+  <div class="flex justify-between items-center border-b border-gray-50 pb-2">
+    
+    <!-- Sección Izquierda: Nombre y Controles de Cantidad -->
+    <div class="flex-1">
+      <p class="text-sm font-semibold text-gray-800 line-clamp-1">{{ item.name }}</p>
+      
+      <!-- Nuevos Controles de + y - -->
+      <div class="flex items-center gap-3 mt-1.5">
+        <button (click)="updateQuantity(i, -1)" class="w-6 h-6 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center font-bold transition-colors">-</button>
+        <span class="text-sm font-medium w-4 text-center">{{ item.quantity }}</span>
+        <button (click)="updateQuantity(i, 1)" class="w-6 h-6 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center font-bold transition-colors">+</button>
+        <span class="text-xs text-gray-400 ml-1">x {{ item.price | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+      </div>
+    </div>
+
+    <!-- Sección Derecha: Subtotal y Eliminar (Se mantiene igual) -->
+    <div class="flex items-center gap-3">
+      <p class="text-sm font-bold text-gray-800">{{ item.subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+      <button (click)="removeFromCart(i)" class="text-red-500 hover:text-red-700">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+      </button>
+    </div>
+    
+  </div>
+}
+    </div>
+
+    <!-- Zona de pago y total -->    
+    <div class="p-6 bg-slate-50 border-t border-gray-200">
+      
+      <!-- Selector de Forma de Pago -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Forma de Pago</label>
+        <select [(ngModel)]="selectedPaymentFormId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+          <option [ngValue]="null" disabled>Seleccione método...</option>
+          @for (payment of paymentForms; track payment.id) {
+            <option [value]="payment.id">{{ payment.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="flex justify-between items-center mb-4">
+        <span class="text-gray-600 font-medium">Total a Pagar</span>
+        <span class="text-2xl font-bold text-blue-600">{{ cartTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+      </div>
+
+      <button (click)="processSale()" [disabled]="cart.length === 0 || !selectedPaymentFormId || isProcessing" 
+        class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold py-4 rounded-xl shadow-md transition-colors text-lg">
+        {{ isProcessing ? 'Procesando...' : 'Cobrar e Imprimir' }}
+      </button>
+    </div>
+  </div>
+</div>

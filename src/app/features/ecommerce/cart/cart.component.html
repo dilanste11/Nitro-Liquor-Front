@@ -1,0 +1,187 @@
+<div class="max-w-7xl mx-auto mb-16">
+  <h1 class="text-3xl font-black text-slate-900 tracking-tight mb-8">Carrito de Compras</h1>
+
+  @if (cartItems.length === 0) {
+    <div class="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm">
+      <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">Tu carrito está vacío</h2>
+      <p class="text-gray-500 mb-6">Parece que aún no has agregado ningún licor a tu pedido.</p>
+      <a routerLink="/catalog" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-sm">
+        Explorar Catálogo
+      </a>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- COLUMNA IZQUIERDA: PRODUCTOS Y DIRECCIÓN -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Lista de Productos -->
+        <div class="space-y-4">
+          @for (item of cartItems; track item.productId) {
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center gap-6 relative">
+              <button (click)="removeItem(item.productId)" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+              <div class="w-24 h-24 bg-gray-50 rounded-lg flex items-center justify-center p-2 flex-shrink-0">
+                @if (item.imageUrl) {
+                  <img [src]="item.imageUrl" [alt]="item.name" class="max-h-full max-w-full object-contain">
+                } @else {
+                  <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                }
+              </div>
+              <div class="flex-1 flex flex-col sm:flex-row justify-between items-center w-full gap-4">
+                <div>
+                  <h3 class="font-bold text-gray-800 text-lg">{{ item.name }}</h3>
+                  <p class="text-blue-600 font-bold">{{ item.price | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+                </div>
+                <div class="flex items-center gap-6">
+                  <div class="flex items-center bg-gray-50 rounded-lg border border-gray-200">
+                    <button (click)="updateQuantity(item.productId, item.quantity, -1)" [disabled]="item.quantity <= 1" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-blue-600 disabled:opacity-50">-</button>
+                    <span class="w-8 text-center font-medium text-sm">{{ item.quantity }}</span>
+                    <button (click)="updateQuantity(item.productId, item.quantity, 1)" [disabled]="item.quantity >= item.maxStock" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-blue-600 disabled:opacity-50">+</button>
+                  </div>
+                  <div class="w-24 text-right">
+                    <span class="font-black text-slate-900">{{ item.subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- SECCIÓN: DATOS DE ENVÍO -->
+        @if (isLoggedIn) {
+          <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-100 mt-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-6 border-b border-gray-100 pb-4">Datos de Envío</h3>
+            
+            <!-- Radios para elegir el método -->
+            <div class="flex flex-col sm:flex-row gap-6 mb-6">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="addressOption" value="saved" [(ngModel)]="addressOption" [disabled]="addresses.length === 0" class="w-5 h-5 text-blue-600 focus:ring-blue-500">
+                <span class="text-sm font-medium text-gray-700" [class.opacity-50]="addresses.length === 0">Mis direcciones guardadas</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="radio" name="addressOption" value="new" [(ngModel)]="addressOption" class="w-5 h-5 text-blue-600 focus:ring-blue-500">
+                <span class="text-sm font-medium text-gray-700">Enviar a otra dirección</span>
+              </label>
+            </div>
+
+            <!-- Mostrar Selector si elige 'saved' -->
+            @if (addressOption === 'saved') {
+              <div class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Selecciona a dónde enviaremos tu pedido:</label>
+                <select [(ngModel)]="selectedAddressId" class="w-full bg-white border border-gray-300 text-gray-800 rounded-lg px-4 py-3 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                  @for (addr of addresses; track addr.id) {
+                    <option [value]="addr.id">{{ addr.type }} - {{ addr.addressLine1 }}, {{ addr.city }}</option>
+                  }
+                </select>
+              </div>
+            } 
+            
+            <!-- Mostrar Formulario si elige 'new' -->
+            @if (addressOption === 'new') {
+              <div class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                <p class="text-sm text-gray-500 mb-4">Esta dirección se guardará solo para este pedido.</p>
+                <form [formGroup]="newAddressForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Nombre quien recibe *</label>
+                    <input type="text" formControlName="name" class="w-full px-3 py-2 rounded border border-gray-300 outline-none focus:border-blue-500">
+                  </div>
+                  
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Apellido *</label>
+                    <input type="text" formControlName="lastName" class="w-full px-3 py-2 rounded border border-gray-300 outline-none focus:border-blue-500">
+                  </div>
+
+                  <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Dirección Principal *</label>
+                    <input type="text" formControlName="addressLine1" placeholder="Ej: Cra 45 # 12-34" class="w-full px-3 py-2 rounded border border-gray-300 outline-none focus:border-blue-500">
+                  </div>
+
+                  <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Apto, Torre, Barrio (Opcional)</label>
+                    <input type="text" formControlName="addressLine2" class="w-full px-3 py-2 rounded border border-gray-300 outline-none focus:border-blue-500">
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Ciudad *</label>
+                    <input type="text" formControlName="city" class="w-full px-3 py-2 rounded border border-gray-300 outline-none focus:border-blue-500">
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Departamento *</label>
+                    <input type="text" formControlName="state" class="w-full px-3 py-2 rounded border border-gray-300 outline-none focus:border-blue-500">
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Teléfono Móvil *</label>
+                    <input type="text" formControlName="phoneNumber" class="w-full px-3 py-2 rounded border border-gray-300 outline-none focus:border-blue-500">
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Documento (Opcional)</label>
+                    <input type="text" formControlName="document" class="w-full px-3 py-2 rounded border border-gray-300 outline-none focus:border-blue-500">
+                  </div>
+                </form>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- COLUMNA DERECHA: RESUMEN Y CHECKOUT -->
+      <div class="lg:col-span-1">
+        <div class="bg-slate-900 rounded-2xl p-6 text-white shadow-xl sticky top-24">
+          <h3 class="text-xl font-bold mb-6">Resumen del Pedido</h3>
+          
+          <!-- Selector de Método de Envío -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-300 mb-2">Método de Envío</label>
+            <select [ngModel]="selectedShippingMethodId" (ngModelChange)="onShippingChange($event)" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg px-3 py-2.5 outline-none">
+              @for (method of shippingMethods; track method.id) {
+                <option [value]="method.id">{{ method.name }} (+{{ method.price | currency:'COP':'symbol-narrow':'1.0-0' }})</option>
+              }
+            </select>
+          </div>
+
+          <!-- Selector de Método de Pago -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-300 mb-2">Forma de Pago</label>
+            <select [(ngModel)]="selectedPaymentFormId" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg px-3 py-2.5 outline-none">
+              <!-- Reemplaza el array paymentForms con el tuyo real de C# -->
+              <option [value]="1">Contra entrega (Efectivo)</option>
+              <option [value]="2">Transferencia Bancaria</option>
+              <!-- @for (pay of paymentForms; track pay.id) {
+                <option [value]="pay.id">{{ pay.name }}</option>
+              } -->
+            </select>
+          </div>
+          
+          <div class="space-y-3 text-sm text-gray-300 border-b border-slate-700 pb-4 mb-4">
+            <div class="flex justify-between">
+              <span>Subtotal ({{ cartService.getCartItemCount() }} items)</span>
+              <span class="font-medium text-white">{{ cartService.getCartTotal() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Costo de Envío</span>
+              <span class="font-medium text-white">{{ shippingCost | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center mb-8">
+            <span class="text-lg">Total a Pagar</span>
+            <span class="text-2xl font-black text-blue-400">{{ getFinalTotal() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+          </div>
+
+          <button (click)="processCheckout()" [disabled]="!isLoggedIn || isProcessing"
+                  class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2">
+            {{ isProcessing ? 'Procesando...' : 'Proceder al Pago' }}
+          </button>
+        </div>
+      </div>
+
+    </div>
+  }
+</div>
