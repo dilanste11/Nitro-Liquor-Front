@@ -6,7 +6,7 @@
       <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
       <h2 class="text-2xl font-bold text-gray-800 mb-2">Tu carrito está vacío</h2>
       <p class="text-gray-500 mb-6">Parece que aún no has agregado ningún licor a tu pedido.</p>
-      <a routerLink="/catalog" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-sm">
+      <a routerLink="/" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors shadow-sm">
         Explorar Catálogo
       </a>
     </div>
@@ -149,13 +149,13 @@
           <!-- Selector de Método de Pago -->
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-300 mb-2">Forma de Pago</label>
-            <select [(ngModel)]="selectedPaymentFormId" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg px-3 py-2.5 outline-none">
-              <!-- Reemplaza el array paymentForms con el tuyo real de C# -->
-              <option [value]="1">Contra entrega (Efectivo)</option>
-              <option [value]="2">Transferencia Bancaria</option>
-              <!-- @for (pay of paymentForms; track pay.id) {
+            <select [(ngModel)]="selectedPaymentFormId"
+                    class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg px-3 py-2.5 outline-none">
+              @for (pay of paymentForms; track pay.id) {
                 <option [value]="pay.id">{{ pay.name }}</option>
-              } -->
+              } @empty {
+                <option [ngValue]="null" disabled>No hay formas de pago disponibles</option>
+              }
             </select>
           </div>
           

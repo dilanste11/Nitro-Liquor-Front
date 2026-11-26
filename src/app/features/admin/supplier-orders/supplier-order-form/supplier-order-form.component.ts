@@ -96,6 +96,15 @@ export class SupplierOrderFormComponent implements OnInit {
     this.orderTotal = this.orderItems.reduce((acc, item) => acc + item.subtotal, 0);
   }
 
+  get filteredProducts() {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) return this.products;
+    return this.products.filter(p =>
+      p.name?.toLowerCase().includes(term) ||
+      p.reference?.toLowerCase().includes(term)
+    );
+  }
+
   processOrder() {
     if (!this.selectedSupplierId) {
       this.uiService.showToast('Seleccione un proveedor', 'error');

@@ -39,9 +39,21 @@ export class AuthService {
     return localStorage.getItem('jwt_token');
   }
 
-  isAuthenticated(): boolean {
+ isAuthenticated(): boolean {
     const token = this.getToken();
-    return !!token; 
+    if (!token) return false;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp && Date.now() >= payload.exp * 1000) {
+        this.logout();
+        return false;
+      }
+      return true;
+    } catch {
+      this.logout();
+      return false;
+    }
   }
 
   // --- NUEVO MÉTODO PARA EXTRAER EL ROL DEL JWT ---

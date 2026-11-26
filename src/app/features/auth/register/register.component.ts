@@ -19,14 +19,16 @@ export class RegisterComponent {
 
   isLoading = false;
 
-registerForm: FormGroup = this.fb.group({
-    document: ['', Validators.required],
-    name: ['', [Validators.required, Validators.minLength(3)]],
-    lastName: ['', Validators.required],
-    username: ['', Validators.required],
-    phoneNumber: ['', Validators.required],
+private passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+  registerForm: FormGroup = this.fb.group({
+    document: ['', [Validators.required, Validators.pattern(/^[0-9]{6,15}$/)]],
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    lastName: ['', [Validators.required, Validators.minLength(2)]],
+    username: ['', [Validators.required, Validators.minLength(4), Validators.pattern(/^[a-zA-Z0-9._-]+$/)]],
+    phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{7,15}$/)]],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    password: ['', [Validators.required, Validators.pattern(this.passwordPattern)]],
     confirmPassword: ['', Validators.required]
   }, { validators: this.passwordMatchValidator });
 

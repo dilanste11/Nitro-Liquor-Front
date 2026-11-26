@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PaymentFormService } from '../../../../core/services/payment-form/payment-form.service';
 import { PaymentFormDTO } from '../../../../models/payment/payment-form.dto';
+import { UiService } from '../../../../core/services/ui/ui.service';
 
 @Component({
   selector: 'app-payment-form-list',
@@ -11,6 +12,7 @@ import { PaymentFormDTO } from '../../../../models/payment/payment-form.dto';
 })
 export class PaymentFormListComponent implements OnInit {
   private paymentService = inject(PaymentFormService);
+  private uiService = inject(UiService);
   
   paymentForms: PaymentFormDTO[] = [];
   isLoading = true;
@@ -36,7 +38,7 @@ export class PaymentFormListComponent implements OnInit {
         next: () => this.loadPaymentForms(),
         error: (err) => {
           console.error('Error al eliminar', err);
-          alert('No se pudo eliminar. Es posible que esté en uso en algún movimiento o auditoría.');
+          this.uiService.showToast('No se pudo eliminar. Es posible que esté en uso en algún movimiento o auditoría.');
         }
       });
     }

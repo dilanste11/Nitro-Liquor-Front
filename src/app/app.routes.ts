@@ -42,7 +42,7 @@ export const routes: Routes = [
   // ==========================================
   {
     path: 'admin',
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
     data: { expectedRoles: ['ADMIN', 'Trabajador'] },
     loadComponent: () => import('./shared/layouts/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [

@@ -88,6 +88,15 @@ export class PosDashboardComponent implements OnInit {
     this.calculateTotal();
   }
 
+get filteredProducts() {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) return this.products;
+    return this.products.filter(p =>
+      p.name?.toLowerCase().includes(term) ||
+      p.reference?.toLowerCase().includes(term)
+    );
+  }
+
   updateQuantity(index: number, change: number) {
     const item = this.cart[index];
     const product = this.products.find(p => p.id === item.productId);

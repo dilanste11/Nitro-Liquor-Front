@@ -8,6 +8,8 @@ import { AddressService } from '../../../core/services/address/address.service';
 import { CheckoutService } from '../../../core/services/checkout/checkout.service';
 import { ShippingMethodService } from '../../../core/services/shipping-method/shipping-method.service';
 import { UiService } from '../../../core/services/ui/ui.service';
+import { PaymentFormService } from '../../../core/services/payment-form/payment-form.service';
+import { PaymentFormDTO } from '../../../models/payment/payment-form.dto';
 
 @Component({
   selector: 'app-cart',
@@ -24,15 +26,12 @@ export class CartComponent implements OnInit {
   private uiService = inject(UiService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
+  private paymentFormService = inject(PaymentFormService);
 
+  paymentForms: PaymentFormDTO[] = [];
   cartItems: CartItem[] = [];
   addresses: any[] = [];
   shippingMethods: any[] = [];
-  paymentForms: any[] = [
-    { id: 1, name: 'Contra entrega (Efectivo)' },
-    { id: 2, name: 'Transferencia Bancaria' }
-    // Nota: Si tienes un PaymentFormService de tu POS, inyéctalo y carga esto desde el backend
-  ];
   
   isLoggedIn = false;
   userId = 0;
@@ -93,15 +92,28 @@ export class CartComponent implements OnInit {
     });
   }
 
-  loadCheckoutOptions() {
+ loadCheckoutOptions() {
     this.shippingMethodService.getActive().subscribe({
       next: (data) => {
         this.shippingMethods = data;
         if (data.length > 0) {
-          this.onShippingChange(data[0].id); // Selecciona el primero por defecto
+          this.onShippingChange(data[0].id);
         }
       },
       error: () => console.error('Error al cargar métodos de envío')
+    });
+
+    this.paymentFormService.getPaymentForms().subscribe({
+      next: (data) => {
+        // Filtramos solo los activos y públicos para el e-commerce
+        this.paymentForms = data.filter(
+          (p) => p.isActive && p.visibility === 'PUBLIC'
+        );
+        if (this.paymentForms.length > 0) {
+          this.selectedPaymentFormId = this.paymentForms[0].id;
+        }
+      },
+      error: () => this.uiService.showToast('Error al cargar formas de pago', 'error')
     });
   }
 
@@ -144,9 +156,9 @@ export class CartComponent implements OnInit {
 
     const checkoutPayload: any = {
       items: formattedItems,
-      totalAmount: this.getFinalTotal(), // Total real con el envío sumado
-      paymentFormId: this.selectedPaymentFormId,
-      shippingMethodId: this.selectedShippingMethodId,
+      totalAmount: this.getFinalTotal(),
+      paymentFormId: Number(this.selectedPaymentFormId),
+      shippingMethodId: Number(this.selectedShippingMethodId),
       addressOption: this.addressOption
     };
 

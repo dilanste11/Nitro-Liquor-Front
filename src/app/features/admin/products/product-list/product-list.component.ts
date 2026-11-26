@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ProductService } from '../../../../core/services/product/product.service';
+import { UiService } from '../../../../core/services/ui/ui.service';
 import { ProductDTO } from '../../../../models/product/product.dto';
 
 @Component({
@@ -11,7 +12,8 @@ import { ProductDTO } from '../../../../models/product/product.dto';
 })
 export class ProductListComponent implements OnInit {
   private productService = inject(ProductService);
-  
+  private uiService = inject(UiService);
+
   products: ProductDTO[] = [];
   isLoading = true;
 
@@ -20,17 +22,32 @@ export class ProductListComponent implements OnInit {
   }
 
   loadProducts() {
+    this.isLoading = true;
     this.productService.getProducts().subscribe({
       next: (data) => {
-        // Asumiendo que tu API devuelve directamente el array. 
-        // Si devuelve { data: [...] }, ajusta esto a data.data
-        this.products = data; 
+        this.products = data;
         this.isLoading = false;
       },
       error: (err) => {
         console.error('Error al cargar los productos', err);
+        this.uiService.showToast('Error al cargar los productos', 'error');
         this.isLoading = false;
       }
     });
+  }
+
+  deleteProduct(id: number) {
+    if (confirm('¿Estás seguro de eliminar este producto?')) {
+      this.productService.deleteProduct(id).subscribe({
+        next: () => {
+          this.uiService.showToast('Producto eliminado con éxito', 'success');
+          this.loadProducts();
+        },
+        error: (err) => {
+          console.error('Error al eliminar el producto', err);
+          this.uiService.showToast('Error al eliminar el producto', 'error');
+        }
+      });
+    }
   }
 }

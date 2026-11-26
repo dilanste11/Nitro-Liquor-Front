@@ -2,11 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { DashboardService, DashboardStats } from '../../../core/services/dashboard/dashboard.service';
 import ApexCharts, { ApexOptions } from 'apexcharts';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule], // <-- Quitamos NgApexchartsModule
+  imports: [CommonModule, RouterLink],
   providers: [CurrencyPipe],
   templateUrl: './dashboard.component.html'
 })

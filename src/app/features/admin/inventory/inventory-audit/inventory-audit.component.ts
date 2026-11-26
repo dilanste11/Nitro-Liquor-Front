@@ -4,6 +4,7 @@ import { ProductService } from '../../../../core/services/product/product.servic
 import { MovementService } from '../../../../core/services/movement/movement.service';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { MovementCreateDTO } from '../../../../models/movement/movement-create.dto';
+import { UiService } from '../../../../core/services/ui/ui.service';
 
 interface AuditItem {
   product: any; // Aquí usa tu ProductDTO
@@ -22,6 +23,7 @@ export class InventoryAuditComponent implements OnInit {
   private productService = inject(ProductService);
   private movementService = inject(MovementService);
   private authService = inject(AuthService);
+  private uiService = inject(UiService);
   
   products: any[] = []; // Tu ProductDTO[]
   auditList: AuditItem[] = [];
@@ -71,11 +73,11 @@ export class InventoryAuditComponent implements OnInit {
 
   onSubmit() {
     if (this.auditList.length === 0) {
-      alert('Debes agregar al menos un producto para auditar.');
+      this.uiService.showToast('Debes agregar al menos un producto para auditar.');
       return;
     }
     if (!this.auditNote) {
-      alert('Debes ingresar un motivo o nota para la auditoría.');
+      this.uiService.showToast('Debes ingresar un motivo o nota para la auditoría.');
       return;
     }
 
@@ -107,7 +109,7 @@ export class InventoryAuditComponent implements OnInit {
 
     this.movementService.createMovement(movement).subscribe({
       next: () => {
-        alert('Auditoría registrada y stock actualizado con éxito.');
+        this.uiService.showToast('Auditoría registrada y stock actualizado con éxito.');
         this.auditList = [];
         this.auditNote = '';
         this.loadProducts(); // Recargar productos para ver el nuevo stock
@@ -115,7 +117,7 @@ export class InventoryAuditComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        alert('Ocurrió un error al registrar la auditoría.');
+        this.uiService.showToast('Ocurrió un error al registrar la auditoría.');
         this.isLoading = false;
       }
     });

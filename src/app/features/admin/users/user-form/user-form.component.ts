@@ -26,14 +26,14 @@ export class UserFormComponent implements OnInit {
   roles: RoleDTO[] = [];
 
   userForm = this.fb.group({
-    document: ['', Validators.required],
-    name: ['', Validators.required],
-    lastName: ['', Validators.required],
-    username: ['', Validators.required],
+    document: ['', [Validators.required, Validators.pattern(/^[0-9]{6,15}$/)]],
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    lastName: ['', [Validators.required, Validators.minLength(2)]],
+    username: ['', [Validators.required, Validators.minLength(4), Validators.pattern(/^[a-zA-Z0-9._-]+$/)]],
     email: ['', [Validators.required, Validators.email]],
-    phoneNumber: [''],
+    phoneNumber: ['', [Validators.pattern(/^[0-9]{7,15}$/)]],
     birthDate: [''],
-    password: [''],
+    password: ['', [Validators.minLength(6)]],
     rolId: [null, Validators.required]
   });
 

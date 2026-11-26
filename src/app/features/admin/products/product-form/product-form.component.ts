@@ -8,6 +8,7 @@ import { CategoryDTO } from '../../../../models/category/category.dto';
 import { ProviderDTO } from '../../../../models/provider/provider.dto';
 import { TaxService } from '../../../../core/services/tax/tax.service';
 import { TaxDTO } from '../../../../models/tax/tax.dto';
+import { AbstractControl, ValidationErrors } from '@angular/forms';
 
 @Component({
   selector: 'app-product-form',
@@ -37,19 +38,25 @@ export class ProductFormComponent implements OnInit {
   taxes: TaxDTO[] = [];
 
   // 3. Declaración del formulario
-  productForm = this.fb.group({
-    reference: ['', Validators.required],
-    name: ['', Validators.required],
+productForm = this.fb.group({
+    reference: ['', [Validators.required, Validators.minLength(2)]],
+    name: ['', [Validators.required, Validators.minLength(3)]],
     description: [''],
-    pricePurchase: [0, [Validators.min(0)]],
-    priceSale: [0, [Validators.required, Validators.min(0)]],
-    quantity: [0, [Validators.min(0)]],
-    stockMinimum: [0, [Validators.min(0)]],
-    stockMaximum: [0, [Validators.min(0)]],
+    pricePurchase: [0, [Validators.required, Validators.min(0)]],
+    priceSale: [0, [Validators.required, Validators.min(1)]],
+    quantity: [0, [Validators.required, Validators.min(0)]],
+    stockMinimum: [0, [Validators.required, Validators.min(0)]],
+    stockMaximum: [0, [Validators.required, Validators.min(0)]],
     productCategoryId: [null, Validators.required],
     supplierId: [null, Validators.required],
-    productTaxId: [null, Validators.required] // Por ahora enviamos 1 por defecto para no romper el No NULL    
-  });
+    productTaxId: [null, Validators.required]
+  }, { validators: this.stockRangeValidator });
+
+  stockRangeValidator(group: AbstractControl): ValidationErrors | null {
+    const min = Number(group.get('stockMinimum')?.value ?? 0);
+    const max = Number(group.get('stockMaximum')?.value ?? 0);
+    return max > 0 && max < min ? { invalidStockRange: true } : null;
+  }
   // 4. Único ciclo de vida OnInit (Se unificaron los dos que tenías)
   ngOnInit() {
     this.loadDropdowns(); 
